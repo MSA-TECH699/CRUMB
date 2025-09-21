@@ -1,0 +1,723 @@
+{
+  "name": "CRUMB_LEGAL_BOT",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -26048,
+        -5104
+      ],
+      "id": "e5fc7174-ae5e-4a08-8185-22115506506c",
+      "name": "Telegram Trigger1",
+      "webhookId": "4280883b-4831-4729-92d8-4f9b4fda7e47",
+      "credentials": {
+        "telegramApi": {
+          "id": "FNmWIVIelSumX5P1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -25168,
+        -4800
+      ],
+      "id": "2453f0c0-e183-46f7-b067-77ced49a251d",
+      "name": "Telegram3",
+      "webhookId": "69e50475-b298-4a12-ab63-17eca1b17224",
+      "credentials": {
+        "telegramApi": {
+          "id": "FNmWIVIelSumX5P1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json[\"message\"][\"text\"].startsWith(\"/createPost\")}}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "f4d95f93-71b8-4d76-8cf0-251753494754"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a006e123-c78b-4fa9-b67e-64284e8dedff",
+                    "leftValue": "={{$json[\"message\"][\"text\"].startsWith(\"/sendMail\")}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b851685f-fa74-41fc-ba30-6db7acba514f",
+                    "leftValue": "={{$json[\"message\"][\"text\"].startsWith(\"/mail\")}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -25824,
+        -5104
+      ],
+      "id": "a03dd9df-4e5d-4972-bc40-fdb1b7599a3c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messageText = items[0].json.message.text;\n\nconst columnName = messageText.replace(/^\\/sendMail\\s+/, '').trim();\n\nreturn [\n  {\n    json: {\n      email: columnName\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25504,
+        -5104
+      ],
+      "id": "61054eca-4c28-482f-8358-d68273003709",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code6').item.json.email }}",
+        "subject": "THIS IS THE DOCUMENT YOU WANTED",
+        "message": "={{ $json.content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -24992,
+        -5104
+      ],
+      "id": "1328e944-2525-4405-b1fe-14e2432c949c",
+      "name": "Gmail1",
+      "webhookId": "e5849fe5-8e06-4375-8a30-8d06c2c72ff8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EDWu1I8FSfgGDd4L",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "17VDOa_d7tfBBvKlWwsw8dByCfxk5d-mnU1xLxZNC1lY"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -25232,
+        -5104
+      ],
+      "id": "b430da78-81bd-49cd-b4f0-2d365d1bbbe5",
+      "name": "Google Docs2",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "emNjrqRKzcUNa3A7",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "success!!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -24720,
+        -5104
+      ],
+      "id": "40830036-8ca1-4cf9-8c4b-41ddae086644",
+      "name": "Telegram1",
+      "webhookId": "e00227fc-c16b-4323-93fe-40b858e25a18",
+      "credentials": {
+        "telegramApi": {
+          "id": "FNmWIVIelSumX5P1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -23680,
+        -5392
+      ],
+      "id": "740e12b9-f215-4269-b993-0abbb597a7a9",
+      "name": "Telegram8",
+      "webhookId": "016d77e9-4356-4e01-a0b2-12eea396d3c5",
+      "credentials": {
+        "telegramApi": {
+          "id": "FNmWIVIelSumX5P1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "17VDOa_d7tfBBvKlWwsw8dByCfxk5d-mnU1xLxZNC1lY"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -25024,
+        -5392
+      ],
+      "id": "432311ad-dd68-431d-b21e-8d38e79ee6d8",
+      "name": "Google Docs4",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "emNjrqRKzcUNa3A7",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -24816,
+        -5280
+      ],
+      "id": "f49d45b6-1dd2-477d-ba17-8cd3c034a27b",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const mapping = {\n  'whatsapp': '2xovtws6sprjl'\n};\n\nreturn items.map(item => {\n  const input = (item.json.designid || '').toLowerCase().trim();  \n  item.json.result = mapping[input] ?? null;\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25280,
+        -5392
+      ],
+      "id": "49f4aad4-a5e6-46ec-8a4d-989cef1b1d5c",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messageText = items[0].json.message.text;\n\nconst columnName = messageText.replace(/^\\/createPost\\s+/, '').trim();\n\nreturn [\n  {\n    json: {\n      designid: columnName\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25504,
+        -5392
+      ],
+      "id": "688e70ac-b469-47c7-aaa5-78df6e4b1855",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=FOR:\n{{ $('Code7').item.json.designid }}\n\nIMAGE TEMPLATE ID:\n{{ $('Code7').item.json.result }}\n\nCONTENT:\n{{ $json.content }}",
+        "options": {
+          "systemMessage": "=You are a smart content creation agent designed to generate concise, professional, and platform-specific post content for either WhatsApp or Twitter.\n\nYou will receive these inputs:\n\nFOR: → The target platform (whatsapp or twitter).\n\nIMAGE TEMPLATE ID:  Unique template ID for the image.\n\nCONTENT: The raw long content for the post.\n\nYour task:\n\nParaphrase and shorten the content:\n\nKeep it professional, clear, and engaging.\n\nEnsure it is no more than 20-30 words max.\n\nAdapt the tone and style to suit the target platform.\n\nFormat output as follows:\n\nIf FOR is whatsapp, respond like:\n{\n\"text\": \"The WhatsApp post content\",\n\"subline\": \"A short subline for the WhatsApp post\",\n\"id\": \"Unique template ID for the image\"\n}\n\nIf FOR is twitter, respond like:\n{\n\"text\": \"The Twitter post title\",\n\"subline\": \"A short subtitle for the Twitter post\",\n\"id\": \"Unique template ID for the image\"\n}\n\n## FEEDBACK HANDELING:\nalso in the FOR field If the user provides feedback that the generated content is not satisfactory, use the feedback to revise the content and try again until the user confirms satisfaction strictly follow the response format include all the details text subline and id in the json from the previos conversation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -24768,
+        -5504
+      ],
+      "id": "2b683220-c3cf-4115-9be8-964fdc1982de",
+      "name": "Create Posting Content"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.placid.app/api/rest/images",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer placid-ypx5jqmerofuku9t-rratks8sil9mycva"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_uuid\": \"{{ $('Code7').item.json.result }}\",\n  \"create_now\": true,\n  \"layers\": {\n    \"quote\": { \"text\": \"{{ $json.text }}\" },\n    \"author\": { \"text\": \"{{ $json.subline }}\" }\n  },\n  \"modifications\": {\n    \"width\": 1200,\n    \"height\": 630,\n    \"filename\": \"social-post.png\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -24128,
+        -5392
+      ],
+      "id": "e57ec6c8-d4e7-434a-b4a4-b2e05b666e48",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all();\n\nconst result = inputData.map(item => {\n\n  const parsed = JSON.parse(item.json.output);\n  \n  return {\n    json: {\n      text: parsed.text,\n      subline: parsed.subline,\n      id: parsed.id\n    }\n  };\n});\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -24336,
+        -5392
+      ],
+      "id": "18ac4ba0-f6bf-4209-a5ef-0c012a441e8d",
+      "name": "Code9"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.image_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -23904,
+        -5392
+      ],
+      "id": "3f0045d9-8718-4b06-bc82-12ec8b9935c5",
+      "name": "HTTP Request7"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger1').item.json.message.chat }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -24560,
+        -5280
+      ],
+      "id": "ad762e12-c531-4c5e-aa68-14bf6f9805a9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=## Use Case Overview:\nYou are the \"Head Agent\", the central coordinator in a content creation system. Your job is to receive user messages, identify what type of content they want, gather clarification if needed, and then pass the structured request to a sub-workflow named `Create content`. After the content is generated, you handle feedback, facilitate edits, and ensure user satisfaction.\n\n## Step-by-step Responsibilities:\n\n1. **Clarify User Intent (Routing Purpose)**\n   - Politely ask the user:\n     - What type of content they want to create (e.g., blog, poem, WhatsApp newsletter, LinkedIn post, Facebook post, etc.)\n     - What is the topic or idea they want to base it on\n   - Wait for clear responses before triggering the sub-workflow.\n   - After clarification, pass the structured prompt to the `Create content` sub-workflow.\n\n2. **Post-Content Delivery**\n   - Receive the first draft content from the `Create content` sub-workflow.\n   - Forward the content to the user (via Telegram or front-end system).\n   - Ask the user: \"Are you satisfied with this content or would you like to make any changes?\"\n\n3. **Edit Handling Loop**\n   - If the user is happy:\n     - Politely thank them and end the session.\n   - If the user is NOT satisfied and asks for changes (e.g., sentence fixes, length adjustments, tone changes, etc.):\n     - You are equipped with session memory and must keep track of previous content.\n     - Use user-provided feedback to modify the existing content accordingly.\n     - Share the revised content with the user and ask again if they are satisfied.\n     - Repeat this loop until the user is satisfied.\n\n## Important Notes:\n- Always maintain a polite, helpful, and user-friendly tone.\n- Use buffer memory to store and retrieve session-specific content.\n- You do not create content from scratch — your role is coordination, clarification, and editing facilitation.\n- Respect the user's content goals and guide them effectively throughout the session.\n\n## Examples of Clarification Prompts:\n- “Hi there! What type of content would you like me to help you create today? (Blog, Poem, WhatsApp Newsletter, etc.)”\n- “Got it! And what's the topic or theme you'd like the content to focus on?”\n\n## Examples of Satisfaction Check Prompts:\n- “Here is your first draft! 😊 Let me know if you’d like to make any changes.”\n- “Would you like me to refine or improve anything in this content?”\n\n## Examples of Edit Follow-Up Prompts:\n- “Thanks for the feedback! I’ve made the requested changes. Please review the new version.”\n- “Would you like more edits or are you happy with this version?”\n\n--- End of Prompt ---"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -25536,
+        -4800
+      ],
+      "id": "e44d1a41-d1ec-4363-99b5-bc92bf5e7523",
+      "name": "routing agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -25648,
+        -4576
+      ],
+      "id": "4cfe8e51-9145-4393-9d3c-94b51fcce949",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Switch').item.json.message.chat }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -25488,
+        -4544
+      ],
+      "id": "f5297949-09e1-4109-b499-92fb0d0374c9",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "description": "call this tool to get the content for the user.",
+        "workflowId": {
+          "__rl": true,
+          "value": "JWcNVIeJE020r8cH",
+          "mode": "list",
+          "cachedResultName": "create content"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -25344,
+        -4576
+      ],
+      "id": "ffdfbd78-6e41-479f-81a9-4057d1c0377b",
+      "name": "Create content"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "routing agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram3": {
+      "main": [
+        []
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Google Docs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs2": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs4": {
+      "main": [
+        [
+          {
+            "node": "Create Posting Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create Posting Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Google Docs4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Posting Content": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Telegram8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram8": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Create Posting Content",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "routing agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "routing agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create content": {
+      "ai_tool": [
+        [
+          {
+            "node": "routing agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "routing agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c2c9c53-9aca-405b-b562-6e848c3ea02b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bb6dc18b67892fe5683aa7a184756b5c191c2bdd3fd7a207018a07cb41ec5a7"
+  },
+  "id": "AnLJkis1Mt0IOF7l",
+  "tags": []
+}

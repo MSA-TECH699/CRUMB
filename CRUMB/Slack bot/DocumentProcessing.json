@@ -1,0 +1,580 @@
+{
+  "name": "Document processing",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='1WefIo4Is3XDkcsRIYqmJ6R_q56Qe1X_7' in parents and mimeType = 'application/vnd.google-apps.folder'",
+        "returnAll": true,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -9728,
+        1232
+      ],
+      "id": "b5fb496c-bc3c-464b-9875-4883c6ce9e1d",
+      "name": "Get folders1",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "15OMDcpOxMcDbu0V",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='{{ $json.id }}' in parents and mimeType = 'application/pdf'",
+        "returnAll": true,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -9504,
+        1232
+      ],
+      "id": "e1df4bae-097f-495b-b91b-26c3ace438b9",
+      "name": "get documents1",
+      "executeOnce": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "15OMDcpOxMcDbu0V",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanText(str) {\n  if (typeof str !== 'string') return '';\n\n  return str\n    // Remove long separator lines (dashes, underscores, equals, etc.)\n    .replace(/[-_=]{3,}/g, ' ')\n    // Remove repeated dots or ellipsis (ASCII and Unicode)\n    .replace(/[\\.\\u2026\\u00B7]{2,}/g, ' ')\n    // Remove unnecessary brackets\n    .replace(/[\\(\\)\\[\\]\\{\\}]/g, ' ')\n    // Remove other repeated symbols (like •, ·, ‧)\n    .replace(/[\\u2022\\u00B7\\u2027]{2,}/g, ' ')\n    // Remove all line breaks, carriage returns, tabs\n    .replace(/[\\r\\n\\t]+/g, ' ')\n    // Replace any sequence of whitespace (including Unicode) with a single space\n    .replace(/\\s+/gu, ' ')\n    // Trim leading/trailing spaces\n    .trim();\n}\n\nconst chunkSize = 1500; // words per chunk\nlet output = [];\n\nitems.forEach((item, itemIndex) => {\n  const rawContent = item?.json?.text || '';\n  const cleanedContent = cleanText(rawContent);\n\n  // If no content after cleaning, still return a single \"final\" empty chunk\n  if (!cleanedContent) {\n    output.push({\n      json: {\n        chunk: '',\n        chunkIndex: 1,\n        totalChunks: 1,\n        chunkStatus: 'final',\n        sourceItem: itemIndex + 1\n      }\n    });\n    return;\n  }\n\n  const words = cleanedContent.split(/\\s+/);\n  const totalChunks = Math.ceil(words.length / chunkSize);\n  let chunk = [];\n\n  for (let i = 0; i < words.length; i++) {\n    chunk.push(words[i]);\n\n    if (chunk.length >= chunkSize || i === words.length - 1) {\n      const chunkIndex = output.length + 1;\n      output.push({\n        json: {\n          chunk: chunk.join(' '),\n          chunkIndex,\n          totalChunks,\n          chunkStatus: chunkIndex === totalChunks ? 'final' : 'more',\n          sourceItem: itemIndex + 1 // useful if processing multiple items\n        }\n      });\n      chunk = [];\n    }\n  }\n});\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7808,
+        1120
+      ],
+      "id": "28d10d1b-08ba-4ee5-bf45-4cc1e4634ab7",
+      "name": "CleanText"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "gpt-4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -9088,
+        1424
+      ],
+      "id": "dc1fb7fa-83a9-4068-a62e-c08500960a4a",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ca70ecb2-2bd1-45bb-abc8-9a96724f23d5",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -8464,
+        1232
+      ],
+      "id": "2f78363a-3e48-4dde-9e51-e97f6d73163f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -7440,
+        1344
+      ],
+      "id": "7706262f-72c6-4007-a654-b28b77401a0c",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c75f4dd9-94e8-481b-8c85-db1d82957c05",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -6768,
+        1280
+      ],
+      "id": "cc103882-7125-4324-b93a-3eef67e6e22d",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return{\n  json:{\n    output: \" the specific information you are looking for was not found in the document\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7280,
+        848
+      ],
+      "id": "04966c73-cab7-46f1-9571-4b10f8e15999",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -7584,
+        1024
+      ],
+      "id": "d08d42a5-c252-48b6-9525-b0938bbb4942",
+      "name": "Loop Over each chunk"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CHUNK STATUS:\n{{ $json.chunkStatus }}\n\nUSER MESSAGE:\n{{ $('FORMAT THE FILES INPUT').item.json.userMsg }}\n\nCHUNK TEXT DATA:\n{{ $json.chunk }}",
+        "options": {
+          "systemMessage": "=You are an AI document chunk analysis engine.\n\nYour task:\nYou will receive:\n1. CHUNK STATUS: {{ $json.chunkStatus }}\n2. USER MESSAGE: {{ $('FORMAT THE FILES INPUT').item.json.userMsg }}\n3. CHUNK TEXT DATA: {{ $json.chunk }}\n\nInstructions:\n- The USER MESSAGE may contain part of the file name. Ignore that and focus ONLY on the real question being asked.\n- Read every word of the CHUNK TEXT DATA carefully.\n- Your goal is to determine if the chunk contains a **clear, direct, and factually correct** answer to the user’s question — without assumptions or guessing.\n- A satisfactory answer must be:\n  * Directly supported by the text in the chunk.\n  * Explicitly relevant to the exact question asked.\n  * Complete enough to stand alone without requiring missing context from other chunks.\n\nDecision Rules:\n1. **If the chunk contains a clear, relevant, and complete answer:**\n   - Stop immediately.\n   - Return:\n   {\n     \"status\": \"success\",\n     \"message\": \"<draft answer that directly addresses the user's question using only information from the chunk>\"\n   }\n\n2. **If the chunk does NOT contain a clear and complete answer:**\n   - Return:\n   {\n     \"status\": \"processed\",\n     \"message\": \"<short draft message, note, or empty string if nothing useful>\"\n   }\n   - The system will then check other chunks.\n\n3. **If CHUNK STATUS is \"final\" and no satisfactory answer was found in any chunk:**\n   - Return:\n   {\n     \"status\": \"failed\",\n     \"message\": \"<a polite message stating the answer was not found>\"\n   }\n\nStrict Rules:\n- NEVER guess or invent details.\n- NEVER combine partial answers from different chunks — success is only triggered if the answer in this chunk alone is enough.\n- Respond ONLY with valid JSON. No explanations, no markdown, no extra text.\n- The JSON must exactly match one of the formats above or the system will break.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -7360,
+        1152
+      ],
+      "id": "8c8db23a-f7d2-4004-a941-fdf17b0f4194",
+      "name": "process the chunk"
+    },
+    {
+      "parameters": {
+        "jsCode": "let outputStr = items[0].json.output;\n\n// Remove markdown-style backticks or code fences\noutputStr = outputStr\n  .trim()\n  .replace(/^```json\\s*/i, '')   // Remove ```json if it starts the string\n  .replace(/^```\\s*/i, '')       // Or plain ``` without language tag\n  .replace(/```$/i, '');         // Remove closing ```\n\nlet parsedOutput;\ntry {\n  parsedOutput = JSON.parse(outputStr);\n} catch (err) {\n  throw new Error(\"Failed to parse cleaned JSON: \" + err.message);\n}\n\nreturn [\n  {\n    json: parsedOutput\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6992,
+        1152
+      ],
+      "id": "8a56b96f-23de-44b5-92ef-52cb6ace4101",
+      "name": "FORMAT THE OUTPUT IN JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "return[{\n  json:{\n    output: $input.all().map(item => item.json),\n    userMsg:$('When Executed by Another Workflow').first().json.query\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9280,
+        1232
+      ],
+      "id": "8d50ff38-9837-41dd-95c2-ca75dea81bd1",
+      "name": "FORMAT THE FILES INPUT"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      output: $input.first().json.message\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6544,
+        1280
+      ],
+      "id": "7510996c-84fe-409e-aa1e-a3a225df9e85",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -9936,
+        1232
+      ],
+      "id": "690bc65e-73e5-42be-98d3-30e64fe6e543",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "let outputStr = items[0].json.output;\n\n// Remove markdown-style backticks or code fences\noutputStr = outputStr\n  .trim()\n  .replace(/^```json\\s*/i, '')   // Remove ```json if it starts the string\n  .replace(/^```\\s*/i, '')       // Or plain ``` without language tag\n  .replace(/```$/i, '');         // Remove closing ```\n\nlet parsedOutput;\ntry {\n  parsedOutput = JSON.parse(outputStr);\n} catch (err) {\n  throw new Error(\"Failed to parse cleaned JSON: \" + err.message);\n}\n\nreturn [\n  {\n    json: parsedOutput\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8688,
+        1232
+      ],
+      "id": "2690178e-0a3e-475e-8e8f-28689765c4a1",
+      "name": "PARSE THE INPUT IN JSON"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=THE USER MESSAGE:\n{{ $json.userMsg }}\n\nALL THE FILES WITH NAME AND ID:\n{{ JSON.stringify($json.output, null, 2) }}",
+        "options": {
+          "systemMessage": "=You are an AI file name matching engine. Your ONLY task is to identify which file from a provided list the user is referring to.\n\nInputs you will receive:\n1. USER MESSAGE: the message from the user\n2. ALL FILES WITH NAME AND ID: an array of files containing id and the name of the google docs file.\n\nRules:\n- The user message may contain the exact file name, a partial file name, or just hints/keywords from the file name.\n- You must identify the single best matching file from the list, even if the match is partial or approximate.\n- Always match robustly: tolerate spelling variations, partial words, and reordered terms.\n- If there are multiple possible matches, select the one that is most specific to the user's message.\n- Do NOT guess outside of the provided file list. If none of the files match, respond with the \"failed\" JSON.\n\nResponse format:\n- If a matching file is found:\n{\n  \"found\": \"success\",\n  \"id\": \"<the id of the file>\",\n  \"name\": \"<the name of the file>\"\n}\n\n- If no matching file is found:\n{\n  \"found\": \"failed\",\n  \"message\": \"the resources cant be found to give the answer to this question!\"\n}\n\nSTRICT REQUIREMENTS:\n- Respond ONLY in JSON.\n- No explanations, no additional text, no markdown formatting.\n- Your output must be valid JSON that can be parsed directly.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -9056,
+        1232
+      ],
+      "id": "1c66f232-3bf9-4ab0-9d57-325374cbd077",
+      "name": "Filter docs"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.chunk }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -7264,
+        1328
+      ],
+      "id": "a0657877-d7ce-42af-bcf6-ed6c10ca64ce",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -8240,
+        1120
+      ],
+      "id": "48b8dc63-925f-4692-9245-d02997e98ab0",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "15OMDcpOxMcDbu0V",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -8032,
+        1120
+      ],
+      "id": "0af92beb-f3a7-4dad-a4fb-8849492407fd",
+      "name": "Extract from File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get folders1": {
+      "main": [
+        [
+          {
+            "node": "get documents1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CleanText": {
+      "main": [
+        [
+          {
+            "node": "Loop Over each chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get documents1": {
+      "main": [
+        [
+          {
+            "node": "FORMAT THE FILES INPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Filter docs",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "process the chunk",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CleanText",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over each chunk": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "process the chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "process the chunk": {
+      "main": [
+        [
+          {
+            "node": "FORMAT THE OUTPUT IN JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMAT THE OUTPUT IN JSON": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMAT THE FILES INPUT": {
+      "main": [
+        [
+          {
+            "node": "Filter docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get folders1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PARSE THE INPUT IN JSON": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter docs": {
+      "main": [
+        [
+          {
+            "node": "PARSE THE INPUT IN JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "process the chunk",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "CleanText",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "55ef118b-bdcd-4fce-b07b-a075cb15b905",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bb6dc18b67892fe5683aa7a184756b5c191c2bdd3fd7a207018a07cb41ec5a7"
+  },
+  "id": "MVba2upbJqQPxWLs",
+  "tags": []
+}

@@ -1,0 +1,409 @@
+{
+  "name": "create content",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a Content Creation Agent in a multi-agent content generation system.\n\nYour job is to generate final, high-quality content using a research sheet and formatting instructions provided to you by the Research Agent.\n\nYou DO NOT:\n- Ask the user any questions.\n- Modify the format, tone, or topic.\n- Make assumptions or fill in missing data.\n- Add explanations or notes.\n\nYou MUST:\n1. Use the provided research content and instructions exactly as given.\n2. Follow the specified format (e.g., blog post, WhatsApp newsletter, Reel script, etc.).\n3. Match the requested tone, length, and structure.\n4. Write clean, natural, platform-appropriate content ready for immediate use.\n5. Improve and polish the content.\n6. Make it more professional, friendly, concise, or engaging — depending on the tone and intent.\n7. Do not change the core meaning.\n8. Do not add any other instructions, questions, or extra text.\n\nInput:\nYou will receive a research sheet containing:\n- A research sheet containing factual summaries and context.\n- Format/tone/length/platform specifications.\n- Any extra instructions needed for content generation.\n\nOutput:\nOnly return the final content nothing more. Do not include your process, explanation, or reasoning.\n\nNow begin."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1872,
+        304
+      ],
+      "id": "1b6b406f-bf79-4f1b-bda0-3da7f8f75cb6",
+      "name": "content creating agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# Prompting Agent - Production-Level Prompt\n\n## Role:\nYou are the Prompting Agent in a multi-agent content generation system.\n\n## Purpose:\nYour only responsibility is to take the clarified user intent (received from the Head Agent) and convert it into a **robust, precise, and high-quality prompt** that can be consumed directly by a downstream Research Agent.\n\n## Input:\n- The Head Agent will provide a clearly defined content request.\n- This includes:\n  - Content type (e.g., blog, newsletter, poem, social post)\n  - Topic or theme\n  - Any specified style, tone, length, or audience preferences\n\n## Output:\n- A single, well-structured prompt that the Research Agent can use to generate the desired content.\n\n## Instructions:\n- Do NOT ask the user any questions.\n- Do NOT make assumptions or perform clarification.\n- Do NOT include any metadata or additional explanation.\n- Simply generate the best possible prompt using the input provided.\n- Ensure the prompt:\n  - Is specific\n  - Mentions the format and topic\n  - Includes any relevant context, tone, or goals\n\n## Example Inputs and Prompts:\n\n**Input:**\n- Type: Blog\n- Topic: Importance of cybersecurity for small businesses\n- Tone: Professional\n- Length: 800–1000 words\n\n**Output Prompt:**\n“Write a professional blog post (800–1000 words) on the importance of cybersecurity for small businesses. Highlight common threats, practical tips for protection, and why even small companies are frequent targets.”\n\n---\n\n**Input:**\n- Type: WhatsApp Newsletter\n- Topic: Water-saving tips during summer\n- Tone: Friendly and concise\n\n**Output Prompt:**\n“Create a short, friendly WhatsApp newsletter sharing practical water-saving tips for households during the summer season. Keep it engaging, useful, and conversational.”\n\n---\n\n## Final Note:\nYour job is to write a single, clean, production-quality prompt — nothing else. You are a backend utility, not a user-facing agent. Output only the prompt text, no wrapping or formatting.\n\n--- END ---"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        752,
+        288
+      ],
+      "id": "366022da-7101-40fd-b495-058ff78c15da",
+      "name": "Prompting agent/clarifier agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        448
+      ],
+      "id": "b9b291f0-af44-463f-831c-08bb1827490e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        432
+      ],
+      "id": "41caaccb-0b3e-456e-b35f-c3b2b51aae87",
+      "name": "SerpAPI1",
+      "credentials": {
+        "serpApi": {
+          "id": "ww5iie5cGwZPPxAI",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        528
+      ],
+      "id": "a5415a1f-7803-4195-9d6e-0bfe03e46c5c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1808,
+        512
+      ],
+      "id": "72c03eb1-76f6-4944-9f18-103cfc7cb63e",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "116A242L6xefbpGp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a Research Agent in a multi-agent content generation system.\n\nYour role is to:\n- Take a confirmed and clarified prompt from the Prompting Agent (Agent 1).\n- Use the SerpAPI (Google Search API)tool to perform accurate, relevant research over the internet based on that prompt.\n- Collect only factual, up-to-date, and useful information.\n- Combine this research with formatting and output instructions received from Agent 1.\n- Pass both the research findings and the original instructions to the Content Creation Agent (Agent 3), which will use them to generate the final content.\n\nYou do NOT ask the user anything.\n\n##YOUR TASKS:\nUnderstand the final prompt. It includes:\nThe topic to research.\nThe desired output format (e.g., blog, WhatsApp newsletter, reel script, etc.).\nTone, platform constraints, and length preferences.\nUse the SerpAPI (Google Search API) to search the internet for relevant, factual information.\nInclude up-to-date facts, definitions, trends, statistics, real-world examples, and key insights.\n\nAvoid opinions, AI hallucinations, or speculative data.\n\nEnsure accuracy, neutrality, and clear structuring.\n\nPreserve and pass the exact formatting and content creation instructions from the Prompting Agent unchanged.\n\nNow begin."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1312,
+        208
+      ],
+      "id": "4afee28f-b28c-4452-ab4b-3b172513b91b",
+      "name": "Research agent"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        288
+      ],
+      "id": "458e504f-670b-47f9-bd7c-19fc447d3a9f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "url": "https://docs.googleapis.com/v1/documents/17VDOa_d7tfBBvKlWwsw8dByCfxk5d-mnU1xLxZNC1lY",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2240,
+        512
+      ],
+      "id": "f752c23f-1374-493b-ae80-4187f7a21d48",
+      "name": "HTTP Request2",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "emNjrqRKzcUNa3A7",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $json.body.content;\nconst last = content[content.length - 1];\nreturn [{ endIndex: last.endIndex - 1 }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        480
+      ],
+      "id": "dbbbdbeb-aeea-452e-be10-31bc3aa8815d",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://docs.googleapis.com/v1/documents/17VDOa_d7tfBBvKlWwsw8dByCfxk5d-mnU1xLxZNC1lY:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"deleteContentRange\": {\n        \"range\": {\n          \"startIndex\": 1,\n          \"endIndex\": {{ $json.endIndex }}\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2704,
+        464
+      ],
+      "id": "f90de4f9-9067-4acf-9c7d-a0b439a5124e",
+      "name": "HTTP Request3",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "emNjrqRKzcUNa3A7",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "17VDOa_d7tfBBvKlWwsw8dByCfxk5d-mnU1xLxZNC1lY",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('content creating agent').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        448
+      ],
+      "id": "a2f85d1d-f34d-49d3-a071-ccd1baf26530",
+      "name": "Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "emNjrqRKzcUNa3A7",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json:{ \n      output:$input.first().json.output\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        208
+      ],
+      "id": "14cd0bf1-17cf-43e9-a4c9-89fb8663e36c",
+      "name": "Code"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "a blog post about ai in nepal."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "content creating agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompting agent/clarifier agent": {
+      "main": [
+        [
+          {
+            "node": "Research agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prompting agent/clarifier agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content creating agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research agent": {
+      "main": [
+        [
+          {
+            "node": "content creating agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prompting agent/clarifier agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "59b99518-1a70-41cd-a4b5-0dd21a46db9b",
+  "meta": {
+    "instanceId": "0bb6dc18b67892fe5683aa7a184756b5c191c2bdd3fd7a207018a07cb41ec5a7"
+  },
+  "id": "JWcNVIeJE020r8cH",
+  "tags": []
+}
